@@ -48,12 +48,19 @@ class AppointmentDiscussionSerializer(serializers.ModelSerializer):
         
         
 class PatientSerializer(serializers.ModelSerializer):
-    user=serializers.CharField(source='user.username')
+    user=serializers.SerializerMethodField()
     test_results=TestResultSerializer(many=True,read_only=True)
     vitalsign_set = VitalSignSerializer(many=True, read_only=True)
     medication_set = MedicationSerializer(many=True, read_only=True)
     
     appointmentdiscussion_set=AppointmentDiscussionSerializer(many=True,read_only=True)
+    
+    
+    def get_user(self,obj):
+        if obj.user:
+            return obj.user.username if obj.user else "Guest"
+       
+    
     
 
     

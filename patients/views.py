@@ -51,9 +51,7 @@ class TestResultDeleteView(generics.DestroyAPIView):
         patient_id = self.kwargs.get('patientId')  
         test_id = self.kwargs.get('test_id')  
         
-        print("patient_id", patient_id)
-        print("test_id", test_id)
-        
+    
         if not patient_id or not test_id:
             raise ValueError("Both patient_id and test_id are required.")
 
@@ -100,8 +98,7 @@ class VitalSignDeleteView(generics.DestroyAPIView):
         patient_id = self.kwargs.get('patientId')  
         vital_id = self.kwargs.get('vital_id')  
         
-        print("patient_id", patient_id)
-        print("vital_id", vital_id)
+       
         
         if not patient_id or not vital_id:
             raise ValueError("Both patient_id and vital_id are required.")
@@ -146,8 +143,7 @@ class MedicationDeleteView(generics.DestroyAPIView):
         patient_id = self.kwargs.get('patientId')  
         medication_id = self.kwargs.get('medication_id')  
         
-        print("patient_id", patient_id)
-        print("vital_id", medication_id)
+      
         
         if not patient_id or not medication_id:
             raise ValueError("Both patient_id and vital_id are required.")

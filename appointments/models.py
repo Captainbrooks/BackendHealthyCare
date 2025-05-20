@@ -21,18 +21,25 @@ class PatientAppointment(models.Model):
     
     department_name=models.CharField(max_length=50)
     doctor = models.ForeignKey(Doctors,on_delete=models.CASCADE)
-    appointment_date = models.DateField(default=date.today)
+    booking_date = models.DateField(default=date.today)
     timeslot=models.ForeignKey(TimeSlot,on_delete=models.CASCADE,related_name='new_appointments')
     patient=models.ForeignKey('patients.Patient',on_delete=models.CASCADE)
     reason_to_visit = models.TextField()
     
     
+    
+   
+    
+    
+    
+    
+    
     def __str__(self):
-        return f"{self.patient.full_name} - {self.appointment_date} - {self.timeslot}"
+        return f"Patient: {self.patient.full_name} - Booked on {self.booking_date} - for  {self.timeslot}"
     
     
     class Meta:
-        unique_together = ('doctor', 'appointment_date', 'timeslot')
+        unique_together = ('doctor', 'booking_date', 'timeslot')
 
 
 class UserMessages(models.Model):

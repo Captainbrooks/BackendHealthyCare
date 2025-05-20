@@ -24,9 +24,14 @@ class PatientSerializer(serializers.ModelSerializer):
         fields=['id','full_name','phone','age','gender','blood_type','emergency_contact','test_results']
         
 
-class Patientnew_appointmentserializer(serializers.ModelSerializer):
-    patient=PatientSerializer()
-    timeslot=TimeSlotSerializer()
+class PatientAppointmentSerializer(serializers.ModelSerializer):
+    
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all(), write_only=True)
+    timeslot = serializers.PrimaryKeyRelatedField(queryset=TimeSlot.objects.all(), write_only=True)
+    
+    
+    patient_data = PatientSerializer(source='patient', read_only=True)
+    timeslot_data = TimeSlotSerializer(source='timeslot', read_only=True)
     
 
     class Meta:

@@ -132,9 +132,11 @@ class TimeSlotListAPIView(generics.ListAPIView):
     def get_queryset(self):
         doctor_id=self.kwargs.get('doctor_id')
         appointment_date=self.request.query_params.get('appointment_date')
-        timeslot= TimeSlot.objects.filter(doctor_id=doctor_id, appointment_date=appointment_date)
         
-        booked_timeslots=PatientAppointment.objects.filter(doctor_id=doctor_id, appointment_date=appointment_date).values_list('timeslot_id',flat=True)
+        timeslot= TimeSlot.objects.filter(doctor_id=doctor_id, appointment_date=appointment_date)
+        timeslot_ids = timeslot.values_list('id', flat=True)
+        
+        booked_timeslots=PatientAppointment.objects.filter(doctor_id=doctor_id, timeslot__in=timeslot_ids).values_list('timeslot_id',flat=True)
         
         available_timeslots=timeslot.exclude(id__in=booked_timeslots)
         

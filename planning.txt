@@ -1,0 +1,6 @@
+
+
+
+in appointments page, only show the in progress or schedule appointments and order should be again date and just like above
+
+in test results page, show all the patients, all the appointments and now working perfectly..

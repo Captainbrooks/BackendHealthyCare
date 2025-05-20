@@ -5,20 +5,22 @@ from django.core.mail import EmailMultiAlternatives
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import PatientAppointment, UserMessages
-from .serializers import Patientnew_appointmentserializer,UserMessageSerializer
+from .serializers import PatientAppointmentSerializer,UserMessageSerializer
 from django.utils import timezone
 from pydoc import doc
 from rest_framework.views import APIView
+from doctors.models import TimeSlot
 
 class PatientAppointmentCreateView(generics.CreateAPIView):
     queryset = PatientAppointment.objects.all()
-    serializer_class = Patientnew_appointmentserializer
+    serializer_class = PatientAppointmentSerializer
     
     def perform_create(self, serializer):
         if not serializer.is_valid():
             print("Validation errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         appointment = serializer.save()
+        print(appointment)
 
         subject = "Appointment Confirmation - HealthyCare Pvt. Ltd."
         recipient_email = appointment.patient.user.email
@@ -38,7 +40,7 @@ class PatientAppointmentCreateView(generics.CreateAPIView):
                         <li><strong>Department:</strong> {appointment.department_name}</li>
                         <li><strong>Doctor:</strong> {appointment.doctor.doctor_name}</li>
                  
-                        <li><strong>Date:</strong> {appointment.appointment_date}</li>
+                        <li><strong>Date:</strong> {appointment.timeslot.appointment_date}</li>
                         <li><strong>Time:</strong>{appointment.timeslot.start_time} - {appointment.timeslot.end_time}</li>
                     </ul>
                     <p>Thank you for choosing <strong>HealthyCare Pvt. Ltd.</strong>. If you have any questions, feel free to contact us.</p>
@@ -57,7 +59,7 @@ class PatientAppointmentCreateView(generics.CreateAPIView):
 
 
 class PatientAppointmentListView(generics.ListAPIView):
-    serializer_class = Patientnew_appointmentserializer
+    serializer_class = PatientAppointmentSerializer
     def get_queryset(self):
         doctor_id = self.request.query_params.get('doctor')  # from ?doctor=Dr. Smith
         today = timezone.localdate()
@@ -65,29 +67,37 @@ class PatientAppointmentListView(generics.ListAPIView):
         if doctor_id:
             return PatientAppointment.objects.filter(
                 doctor=doctor_id,
-                appointment_date=today
-            )
+                status__in=['scheduled','in-progress','completed']
+            ).order_by('-booking_date')
         
         # Return none if doctor not provided to avoid exposing all new_appointments
         return PatientAppointment.objects.none()
     
-    
 class UpdatePatientAppointmentView(APIView):
-    def put(self,request,id):
+    def put(self, request, appid, timeid):
         try:
-            appointment=PatientAppointment.objects.get(id=id)
+            # Fetch the timeslot object first
+            timeslot = TimeSlot.objects.get(id=timeid)
+            
+        except TimeSlot.DoesNotExist:
+            return Response({"error": "TimeSlot not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid,)
         except PatientAppointment.DoesNotExist:
             return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        new_status=request.data.get('status')
-        
-        if new_status not in ["scheduled", "in-progress", "completed", "cancelled"]:
+
+        new_status = request.data.get('status')
+
+        if new_status not in dict(PatientAppointment.STATUS_CHOICES):
             return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        appointment.status=new_status
+
+        # Update and save the status
+        appointment.status = new_status
         appointment.save()
-        
+
         return Response({"message": "Appointment status updated successfully"}, status=status.HTTP_200_OK)
+
         
         
             
@@ -97,19 +107,20 @@ class UpdatePatientAppointmentView(APIView):
     
     
 class PatientAppointmentAllListView(generics.ListAPIView):
-    serializer_class = Patientnew_appointmentserializer
+    serializer_class = PatientAppointmentSerializer
     
     def get_queryset(self):
         doctor_id = self.request.query_params.get('doctor')
+        status=self.request.query_params.get('status').lower()
+      
         
-        if doctor_id:
-            return PatientAppointment.objects.filter(doctor_id=doctor_id)
+        qs = PatientAppointment.objects.filter(doctor_id=doctor_id)
+        if doctor_id and status:
+            filtered = qs.filter(status__iexact=status).order_by('-booking_date')
+            return filtered
         return PatientAppointment.objects.none()
-        
     
-    
-    
-    
+
     
 class UserMessagesCreateView(generics.CreateAPIView):
     queryset=UserMessages.objects.all()

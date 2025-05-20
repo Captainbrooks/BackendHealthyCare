@@ -42,6 +42,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             
         )
         
+        
         print(user)
         Patient.objects.create(
             user=user,
@@ -107,6 +108,10 @@ class LoginSerializer(serializers.Serializer):
         
         
         
+        
+        
+        
+        
         if Doctors.objects.filter(user=user).exists():
             doctor=Doctors.objects.get(user=user)
             
@@ -117,7 +122,7 @@ class LoginSerializer(serializers.Serializer):
             refresh['id']=doctor.id
             
         else:
-            patient = Patient.objects.get(user=user)
+            patient, created = Patient.objects.get_or_create(user=user)
             print("patient",patient.id)
             refresh['role'] = 'Patient'
             refresh['id'] = patient.id
