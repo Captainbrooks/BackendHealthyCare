@@ -20,7 +20,6 @@ class PatientAppointmentCreateView(generics.CreateAPIView):
             print("Validation errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         appointment = serializer.save()
-        print(appointment)
 
         subject = "Appointment Confirmation - HealthyCare Pvt. Ltd."
         recipient_email = appointment.patient.user.email
@@ -75,19 +74,34 @@ class PatientAppointmentListView(generics.ListAPIView):
     
 class UpdatePatientAppointmentView(APIView):
     def put(self, request, appid, timeid):
+        new_status = request.data.get('status')
+        
+        print("new status", new_status)
+        
         try:
             # Fetch the timeslot object first
             timeslot = TimeSlot.objects.get(id=timeid)
+            print("timeslot at views / appointment", timeslot)
+            
+            if (new_status == "cancelled"):
+                appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid).delete()
+                timeslot.is_booked=False
+                timeslot.save()
+                
+                
+                return Response({})
+                
+                
+
             
         except TimeSlot.DoesNotExist:
             return Response({"error": "TimeSlot not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid,)
+            appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid)
         except PatientAppointment.DoesNotExist:
             return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        new_status = request.data.get('status')
 
         if new_status not in dict(PatientAppointment.STATUS_CHOICES):
             return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)

@@ -15,19 +15,21 @@ from .models import Doctors
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import DoctorsSerializers
+import time
 
 
 
 class UpdateDoctorAvailability(APIView):
-    def patch(self,request,doctor_id):
+
+    def patch(self, request, doctor_id):
         try:
-            doctor=Doctors.objects.get(id=doctor_id)
+            doctor = Doctors.objects.get(id=doctor_id)
         except Doctors.DoesNotExist:
             return Response({"detail": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        updated_availability=request.data.get('availability',[])
+        updated_availability = request.data.get('availability', [])
         
-        doctor.availability= updated_availability
+        doctor.availability = updated_availability
         doctor.save()
         serializer = DoctorsSerializers(doctor)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -42,18 +44,16 @@ class DoctorsListCreateView(generics.ListCreateAPIView):
         # Custom logic before saving the doctor instance
         # This will handle image uploading correctly
         serializer.save()
-        
-        
 
 
 class DoctorsListView(generics.ListAPIView):
-    
     
     serializer_class = DoctorsSerializers
     
     def get_queryset(self):
         path = self.request.path
         queryset = self.queryset
+        
 
         department_name = self.kwargs.get('department_name')
         doctor_name = self.kwargs.get('doctor_name')
@@ -65,10 +65,7 @@ class DoctorsListView(generics.ListAPIView):
             
         today = timezone.now().strftime('%A')
         
-        
         queryset = Doctors.objects.all()
-
-        
 
         if department_name:
             queryset = queryset.filter(department_name__iexact=department_name)
@@ -77,26 +74,18 @@ class DoctorsListView(generics.ListAPIView):
             queryset = queryset.filter(doctor_name__iexact=doctor_name)
             
         if qualified:
-            queryset=queryset.filter(is_extraordinary=True)
-
-            
+            queryset = queryset.filter(is_extraordinary=True)
             
         if availabletoday:
-            doctors_available_today=[]
+            doctors_available_today = []
             
             for doctor in queryset:
                 if today in doctor.availability:
                     doctors_available_today.append(doctor)
                     
             return doctors_available_today
-        
-        
-        
-        
- 
             
         return queryset
-    
 
 
 class DoctorsDetailView(generics.RetrieveUpdateAPIView):
@@ -116,41 +105,33 @@ class DoctorsDetailView(generics.RetrieveUpdateAPIView):
             raise NotFound("Doctor with the specified name not found.")
         
         
-        
-        
 class DoctorAvailabilityView(generics.RetrieveAPIView):
-    queryset=Doctors.objects.all()
+    queryset = Doctors.objects.all()
     serializer_class = DoctorsSerializers
     lookup_field = 'pk'
 
 
-
-
 class TimeSlotListAPIView(generics.ListAPIView):
-    serializer_class=TimeSlotSerializer
+    serializer_class = TimeSlotSerializer
     
     def get_queryset(self):
-        doctor_id=self.kwargs.get('doctor_id')
-        appointment_date=self.request.query_params.get('appointment_date')
         
-        timeslot= TimeSlot.objects.filter(doctor_id=doctor_id, appointment_date=appointment_date)
+        doctor_id = self.kwargs.get('doctor_id')
+        appointment_date = self.request.query_params.get('appointment_date')
+        
+        timeslot = TimeSlot.objects.filter(doctor_id=doctor_id, appointment_date=appointment_date,is_booked=False)
+        
         timeslot_ids = timeslot.values_list('id', flat=True)
         
-        booked_timeslots=PatientAppointment.objects.filter(doctor_id=doctor_id, timeslot__in=timeslot_ids).values_list('timeslot_id',flat=True)
+        booked_timeslots = PatientAppointment.objects.filter(doctor_id=doctor_id, timeslot__in=timeslot_ids).values_list('timeslot_id', flat=True)
         
-        available_timeslots=timeslot.exclude(id__in=booked_timeslots)
+        available_timeslots = timeslot.exclude(id__in=booked_timeslots)
         
         if appointment_date == timezone.now().date().isoformat():
             current_time = timezone.now().time()
             available_timeslots = available_timeslots.filter(start_time__gt=current_time)
-            
     
         return available_timeslots
-    
-    
-
-        
-
 
 
 class HospitalListView(generics.ListCreateAPIView):

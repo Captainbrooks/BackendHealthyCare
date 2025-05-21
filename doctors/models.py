@@ -107,6 +107,7 @@ class TimeSlot(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     appointment_date = models.DateField()
+    is_booked=models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('doctor', 'start_time', 'end_time', 'appointment_date')

@@ -15,7 +15,7 @@ class TimeSlotSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=TimeSlot
-        fields= ['id', 'start_time', 'end_time', 'appointment_date']
+        fields= ['id', 'start_time', 'end_time', 'appointment_date','is_booked']
         
             
         

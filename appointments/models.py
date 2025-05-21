@@ -27,6 +27,12 @@ class PatientAppointment(models.Model):
     reason_to_visit = models.TextField()
     
     
+    def save(self,*args, **kwargs):
+        if not self.pk:
+            self.timeslot.is_booked=True
+            self.timeslot.save()
+        super().save(*args, **kwargs)
+    
     
    
     
@@ -39,7 +45,8 @@ class PatientAppointment(models.Model):
     
     
     class Meta:
-        unique_together = ('doctor', 'booking_date', 'timeslot')
+        unique_together = ('doctor', 'booking_date', 'timeslot','patient')
+
 
 
 class UserMessages(models.Model):
