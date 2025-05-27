@@ -42,13 +42,29 @@ class RegistrationSerializer(serializers.ModelSerializer):
             
         )
         
+        print("Checking for existing walk-in patient with email:", user.email)
+        existing_patient = Patient.objects.filter(email=user.email, user__isnull=True).first()
+
         
-        print(user)
-        Patient.objects.create(
+        if existing_patient:
+            print("Found existing walk-in patient with ID:", existing_patient.id)
+            existing_patient.user=user
+            existing_patient.save()
+            print("Linked walk in patient with registered user")
+            
+        else:
+            new_patient=Patient.objects.create(
             user=user,
-            full_name=validated_data['username']
-        )
+            full_name=validated_data['username'],
+            email=user.email,
+            )
+            print("Created new patient with ID:", new_patient.id)
         
+        
+        
+        patient = Patient.objects.get(user=user)
+        print("Final linked patient ID for user:", patient.id)
+            
         send_verification_email(user.email, code)
         
         refresh = RefreshToken.for_user(user)
@@ -59,7 +75,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             refresh['role'] = 'Doctor'
             refresh['id'] = doctor.id
         else:
-            patient = Patient.objects.get(user=user)
             print("patient",patient.id)
             refresh['role'] = 'Patient'
             refresh['id'] = patient.id

@@ -5,6 +5,7 @@ import datetime
 
 class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
     age = models.IntegerField(null=True, blank=True)

@@ -75,7 +75,7 @@ class VerifyCodeView(APIView):
             return Response({"message":"Invalid Email"}, status=status.HTTP_404_NOT_FOUND)
         
         if user.is_verified:
-            return Response({"message": "Already verified."}, status=status.HTTP_200_OK)
+            return Response({"message": "Already verified.Please go to patient portal and login"}, status=status.HTTP_200_OK)
         
         if user.verification_code != code:
             return Response({"error":"Invalid verification code."}, status=status.HTTP_400_BAD_REQUEST)
@@ -91,7 +91,7 @@ class VerifyCodeView(APIView):
         user.save()
         
         return Response({
-            "message":"Email verified successfully"
+            "message":"Email verified successfully."
         })
         
         
@@ -106,7 +106,7 @@ class ResendVerificationCodeView(APIView):
             return Response({"error":"User not found"}, status=status.HTTP_404_NOT_FOUND)
         
         if user.is_verified:
-            return Response({"message": "Email already verified."}, status=status.HTTP_200_OK)
+            return Response({"message": "Email already verified. Please go to patient portal and login."}, status=status.HTTP_200_OK)
         
         code = generate_verification_code()
         print(code)

@@ -72,10 +72,18 @@ MIDDLEWARE = [
     
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://40c0-134-41-28-31.ngrok-free.app",
+]
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # your Vite frontend
+    "http://localhost:5173",
+    "http://192.168.2.17:5173",
+    
+    # your Vite frontend
 ]
 
 ROOT_URLCONF = 'healthycare.urls'

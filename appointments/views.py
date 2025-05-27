@@ -11,6 +11,11 @@ from pydoc import doc
 from rest_framework.views import APIView
 from doctors.models import TimeSlot
 
+
+class URLRouteCheckView(APIView):
+    def get(self, request):
+        return Response({"message": "Hello"})
+
 class PatientAppointmentCreateView(generics.CreateAPIView):
     queryset = PatientAppointment.objects.all()
     serializer_class = PatientAppointmentSerializer
@@ -77,6 +82,8 @@ class UpdatePatientAppointmentView(APIView):
         new_status = request.data.get('status')
         
         print("new status", new_status)
+        print("appid",appid)
+        
         
         try:
             # Fetch the timeslot object first
@@ -85,6 +92,7 @@ class UpdatePatientAppointmentView(APIView):
             
             if (new_status == "cancelled"):
                 appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid).delete()
+                print("appointment", appointment)
                 timeslot.is_booked=False
                 timeslot.save()
                 
