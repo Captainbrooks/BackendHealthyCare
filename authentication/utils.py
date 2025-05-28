@@ -1,3 +1,4 @@
+import os
 import random
 from django.core.mail import EmailMultiAlternatives
 import secrets
@@ -5,6 +6,7 @@ from datetime import timedelta
 from django.utils import timezone
 from authentication.models import PasswordResetToken
 import hashlib
+
 
 def generate_verification_code():
     return str(random.randint(100000, 999999))
@@ -79,7 +81,8 @@ def generate_forgotpassword_link(user):
 
 
 def send_password_reset_email(email, token):
-    reset_url = f"http://localhost:5173/reset-password/{token}"
+    reset=os.getenv('FRONTEND_URL')
+    reset_url = f"{reset}/reset-password/{token}"
     subject = "Reset Your Password"
     recipient_email = email
     from_email = "noreply@miltongaire.com"

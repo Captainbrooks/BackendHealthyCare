@@ -63,10 +63,6 @@ class VerifyCodeView(APIView):
     def post(self, request):
         email = request.data.get('email')
         code = request.data.get('code')
-        
-        print("verify code is reached")
-        
-        print("email", email)
         print("from user code", code)
         
         try:
@@ -81,7 +77,7 @@ class VerifyCodeView(APIView):
             return Response({"error":"Invalid verification code."}, status=status.HTTP_400_BAD_REQUEST)
         
         if timezone.now() > user.code_generated_at + timedelta(minutes=10):
-            return Response({"error":"Verification code expired"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error":"Verification code expired. Please request a new one"}, status=status.HTTP_400_BAD_REQUEST)
         
         user.is_active = True
         user.is_verified = True

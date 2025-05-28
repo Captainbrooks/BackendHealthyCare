@@ -12,9 +12,41 @@ from rest_framework.views import APIView
 from doctors.models import TimeSlot
 
 
-class URLRouteCheckView(APIView):
-    def get(self, request):
-        return Response({"message": "Hello"})
+def appointmentCancelEmail(email, timeslot):
+    subject = "Appointment Cancellation Notice"
+    recipient_email = email
+    from_email = "noreply@miltongaire.com"
+
+    html_message = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+            <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" width="80" alt="Cancelled Icon" />
+                    <h2 style="color: #c0392b; margin: 0;">Appointment Cancelled</h2>
+                </div>
+
+                <p style="font-size: 16px; color: #34495e;">
+                    We're sorry to inform you that your appointment scheduled on <strong>{timeslot.appointment_date} for {timeslot.start_time}-{timeslot.end_time}</strong> has been cancelled.
+                </p>
+
+                <p style="font-size: 16px; color: #34495e;">
+                    If this cancellation was unexpected or you’d like to reschedule, please contact our support team or visit our website to book a new appointment.
+                </p>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="https://healthycare.miltongaire.com/" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Book New Appointment</a>
+                </div>
+
+                <p style="text-align: center; font-size: 14px; color: #666; margin-top: 30px;">© 2025 HealthyCare Pvt. Ltd. All rights reserved.</p>
+            </div>
+        </body>
+    </html>
+    """
+
+    email_message = EmailMultiAlternatives(subject, "", from_email, [recipient_email])
+    email_message.attach_alternative(html_message, "text/html")
+    email_message.send()
 
 class PatientAppointmentCreateView(generics.CreateAPIView):
     queryset = PatientAppointment.objects.all()
@@ -91,14 +123,21 @@ class UpdatePatientAppointmentView(APIView):
             print("timeslot at views / appointment", timeslot)
             
             if (new_status == "cancelled"):
-                appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid).delete()
-                print("appointment", appointment)
+                appointment = PatientAppointment.objects.get(timeslot=timeslot,patient__id=appid)
+                patient_email=appointment.patient.email
+                
+                appointment.delete()
+                
+                   
                 timeslot.is_booked=False
                 timeslot.save()
                 
+                appointmentCancelEmail(patient_email,timeslot)
+                return Response({"message": "Appointment cancelled successfully"}, status=status.HTTP_200_OK)
                 
-                return Response({})
+        
                 
+                  
                 
 
             
@@ -183,8 +222,9 @@ class UserMessagesCreateView(generics.CreateAPIView):
         return Response({"message": "Message Received, confirmation email sent"}, status=status.HTTP_201_CREATED) 
     
     
-    
-    
+
+
+
     
 
     

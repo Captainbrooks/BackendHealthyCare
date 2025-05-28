@@ -138,9 +138,9 @@ class LoginSerializer(serializers.Serializer):
             
         else:
             patient, created = Patient.objects.get_or_create(user=user)
-            print("patient",patient.id)
             refresh['role'] = 'Patient'
             refresh['id'] = patient.id
+            refresh['email']=patient.email
             
             
             
