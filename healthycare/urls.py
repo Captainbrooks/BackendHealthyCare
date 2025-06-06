@@ -21,10 +21,18 @@ from django.conf import settings
 
 
 
+
 from django.urls import path, include
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({'message': 'CSRF cookie set'})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/csrf/',csrf),
     path('api/appointments/', include('appointments.urls')),
     path('api/doctors/',include('doctors.urls')),
     path('api/auth/', include('authentication.urls')),

@@ -118,8 +118,8 @@ DATABASES = {
         'NAME': os.getenv("DATABASE_NAME"),
         'USER': os.getenv("DATABASE_USER"),
         'PASSWORD': os.getenv("DATABASE_PASSWORD"),
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'HOST': os.getenv('DATABASE_HOST','db'),
+        'PORT': os.getenv("DATABASE_PORT", "3306"),
     }
 }
 
@@ -156,7 +156,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT=BASE_DIR / 'static'
+STATIC_ROOT=os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = '/media/'  # URL for media files (accessible through the browser)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
