@@ -20,18 +20,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password']
         extra_kwargs = {'password': {'write_only': True}}
-        
+
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email is already in use.")
         return value
-        
+
     def create(self, validated_data):
-        
         code = generate_verification_code()
         print("Code", code)
         now = timezone.now()
-            
+
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -39,54 +38,27 @@ class RegistrationSerializer(serializers.ModelSerializer):
             is_active=False,
             verification_code=code,
             code_generated_at=now
-            
         )
-        
+
         print("Checking for existing walk-in patient with email:", user.email)
         existing_patient = Patient.objects.filter(email=user.email, user__isnull=True).first()
 
-        
         if existing_patient:
             print("Found existing walk-in patient with ID:", existing_patient.id)
-            existing_patient.user=user
+            existing_patient.user = user
             existing_patient.save()
-            print("Linked walk in patient with registered user")
-            
         else:
-            new_patient=Patient.objects.create(
-            user=user,
-            full_name=validated_data['username'],
-            email=user.email,
+            new_patient = Patient.objects.create(
+                user=user,
+                full_name=validated_data['username'],
+                email=user.email,
             )
             print("Created new patient with ID:", new_patient.id)
-        
-        
-        
-        patient = Patient.objects.get(user=user)
-        print("Final linked patient ID for user:", patient.id)
-            
-        send_verification_email(user.email, code)
-        
-        refresh = RefreshToken.for_user(user)
-        refresh['username'] = user.username
-        
-        if Doctors.objects.filter(user=user).exists():
-            doctor = Doctors.objects.get(user=user)
-            refresh['role'] = 'Doctor'
-            refresh['id'] = doctor.id
-        else:
-            print("patient",patient.id)
-            refresh['role'] = 'Patient'
-            refresh['id'] = patient.id
-        
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
 
-        return {
-            'user': user,
-            'access': access_token,
-            'refresh': refresh_token
-        }
+        print("Final linked patient ID for user:", Patient.objects.get(user=user).id)
+        send_verification_email(user.email, code)
+        return user  # ✅ Only return the model instance
+
         
         
 class LoginSerializer(serializers.Serializer):
