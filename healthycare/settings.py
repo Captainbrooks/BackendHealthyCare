@@ -14,6 +14,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.conf.global_settings import CSRF_TRUSTED_ORIGINS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['https://www.healthycare.miltongaire.com','healthycare.miltongaire.com','93.127.216.47']
 
 AUTH_USER_MODEL = 'authentication.User'
 
@@ -75,7 +76,17 @@ MIDDLEWARE = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # your Vite frontend
+    os.getenv('FRONTEND_URL'),
+    "http://localhost:5173",
+    "http://frontend",     
+    
+    # your Vite frontend
+]
+
+CSRF_TRUSTED_ORIGINS=[
+    os.getenv('FRONTEND_URL'),
+    "http://localhost:5173",
+     "http://frontend",
 ]
 
 ROOT_URLCONF = 'healthycare.urls'
@@ -144,7 +155,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT=BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'  # URL for media files (accessible through the browser)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
