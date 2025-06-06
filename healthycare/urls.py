@@ -31,7 +31,7 @@ def csrf(request):
     return JsonResponse({'message': 'CSRF cookie set'})
 
 def testing(request):
-    return JsonResponse({'message': 'CSRF cookie set'})
+    return JsonResponse({'message': 'Testing is successfull'})
 
 urlpatterns = [
     path('api/',testing),
