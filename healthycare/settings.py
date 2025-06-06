@@ -27,17 +27,9 @@ load_dotenv(dotenv_path=BASE_DIR / '.env')
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = os.getenv("DEBUG") == "True"
 
-
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-X_FRAME_OPTIONS = 'DENY'
-
-
-ALLOWED_HOSTS = ['localhost','127.0.0.1','backend','93.127.216.47','https://healthycare.miltongaire.com']
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'authentication.User'
 
@@ -80,23 +72,10 @@ MIDDLEWARE = [
     
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'http://frontend',
-    'http://93.127.216.47',
-    'https://healthycare.miltongaire.com'
-]
-
-
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://frontend',
-    'http://93.127.216.47',
-    'https://healthycare.miltongaire.com'
-    
-    # your Vite frontend
+    "http://localhost:5173",  # your Vite frontend
 ]
 
 ROOT_URLCONF = 'healthycare.urls'
@@ -128,8 +107,8 @@ DATABASES = {
         'NAME': os.getenv("DATABASE_NAME"),
         'USER': os.getenv("DATABASE_USER"),
         'PASSWORD': os.getenv("DATABASE_PASSWORD"),
-        'HOST': os.getenv("DATABASE_HOST", "db"),  # default to Docker service name
-        'PORT': os.getenv("DATABASE_PORT", "3306"),
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
@@ -166,9 +145,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
-MEDIA_URL = '/media/' 
+MEDIA_URL = '/media/'  # URL for media files (accessible through the browser)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
