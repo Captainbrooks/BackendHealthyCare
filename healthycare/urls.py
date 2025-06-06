@@ -30,7 +30,11 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 def csrf(request):
     return JsonResponse({'message': 'CSRF cookie set'})
 
+def testing(request):
+    return JsonResponse({'message': 'CSRF cookie set'})
+
 urlpatterns = [
+    path('api/',testing),
     path('admin/', admin.site.urls),
     path('api/csrf/',csrf),
     path('api/appointments/', include('appointments.urls')),
@@ -41,3 +45,4 @@ urlpatterns = [
  
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
