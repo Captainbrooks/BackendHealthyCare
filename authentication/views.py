@@ -25,35 +25,65 @@ from rest_framework.decorators import permission_classes
 
 class RegisterView(APIView):
 
-    def post(self, request):
-        serializer = RegistrationSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.save()  # This is now a User instance
+    def create(self, validated_data):
+        
+        try:
+            code = generate_verification_code()
+            print("Code", code)
+            now = timezone.now()
+            
+            user = User.objects.create_user(
+                username=validated_data['username'],
+                email=validated_data['email'],
+                password=validated_data['password'],
+                is_active=False,
+                verification_code=code,
+                code_generated_at=now
+            )
+
+            print("Checking for existing walk-in patient with email:", user.email)
+            existing_patient = Patient.objects.filter(email=user.email, user__isnull=True).first()
+
+            if existing_patient:
+                print("Found existing walk-in patient with ID:", existing_patient.id)
+                existing_patient.user = user
+                existing_patient.save()
+            else:
+                new_patient = Patient.objects.create(
+                    user=user,
+                    full_name=validated_data['username'],
+                    email=user.email,
+                )
+                print("Created new patient with ID:", new_patient.id)
+
+            patient = Patient.objects.get(user=user)
+            print("Final linked patient ID for user:", patient.id)
+
+            send_verification_email(user.email, code)
 
             refresh = RefreshToken.for_user(user)
             refresh['username'] = user.username
 
-            # Role logic
             if Doctors.objects.filter(user=user).exists():
                 doctor = Doctors.objects.get(user=user)
                 refresh['role'] = 'Doctor'
                 refresh['id'] = doctor.id
             else:
-                patient = Patient.objects.get(user=user)
+                print("patient", patient.id)
                 refresh['role'] = 'Patient'
                 refresh['id'] = patient.id
 
-            return Response({
-                "message": "User registered successfully",
-                "user": RegistrationSerializer(user).data,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }, status=status.HTTP_201_CREATED)
+            return {
+                'user': user,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
 
-        return Response({
-            "error": serializer.errors,
-            "status": status.HTTP_400_BAD_REQUEST
-        })
+        except Exception as e:
+            import traceback
+            print("🔥 Exception during registration:", str(e))
+            traceback.print_exc()
+            raise e
 
     
     
