@@ -15,6 +15,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from django.conf.global_settings import CSRF_TRUSTED_ORIGINS
+import cloudinary
+from decouple import config
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +34,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['https://www.healthycare.miltongaire.com','healthycare.miltongaire.com','93.127.216.47']
+ALLOWED_HOSTS = ['*','https://www.healthycare.miltongaire.com','healthycare.miltongaire.com','93.127.216.47']
 
 AUTH_USER_MODEL = 'authentication.User'
 
@@ -51,8 +55,21 @@ INSTALLED_APPS = [
     'multiselectfield',
     'authentication',
     'patients',
+    'cloudinary',
+    'cloudinary_storage',
+    
     
 ]
+
+DEFAULT_FILE_STORAGE= 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -123,6 +140,7 @@ DATABASES = {
     }
 }
 
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -156,10 +174,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT=os.path.join(BASE_DIR, 'static/')
 
-MEDIA_URL = '/media/'  # URL for media files (accessible through the browser)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Optional: only if you have your own custom static/ folder
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

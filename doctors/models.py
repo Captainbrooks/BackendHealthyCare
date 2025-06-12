@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from multiselectfield import MultiSelectField
+from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -87,7 +88,7 @@ class Doctors(models.Model):
     rating = models.FloatField(default=0.0)
     num_reviews = models.IntegerField(default=0)
  
-    image = models.ImageField(upload_to='doctors/', null=True, blank=True)
+    image = CloudinaryField('image', folder='healthycare-doctors')
     specializations = models.ManyToManyField(Specialization, blank=True)
     certifications = models.ManyToManyField(Certification, blank=True)
     languages = models.ManyToManyField(Language, blank=True)

@@ -69,6 +69,8 @@ class DoctorsSerializers(serializers.ModelSerializer):
     hospital_name = serializers.CharField(source='hospital_name.hospital_name')
     location = serializers.CharField(source='hospital_name.location')
     awards=AwardsSerializer(many=True)
+    image = serializers.SerializerMethodField()
+    
     
 
 
@@ -76,6 +78,8 @@ class DoctorsSerializers(serializers.ModelSerializer):
         model = Doctors
         fields = ['id','doctor_name', 'department_name', 'education', 'experience','background', 'availability', 'hospital_name','location', 'rating', 'num_reviews', 'image','specializations', 'certifications', 'languages', 'reviews','awards','publications','is_extraordinary']
 
+    def get_image(self, obj):
+        return obj.image.url if obj.image else None
 
 
 
